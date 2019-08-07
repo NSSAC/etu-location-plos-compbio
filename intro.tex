@@ -1,0 +1,75 @@
+
+\red{make text more current}
+
+The 2014 Ebola outbreak was the largest in history, accounting for more than 11,300
+deaths in West Africa. Starting in Guinea in December 2013 \cite{Baize2014}, 
+the epidemic quickly spread to the neighboring countries,
+and sustained autochthonous transmission was seen in Liberia and Sierra Leone
+by March, 2014.  The health infrastructure in the West African countries of Guinea, Sierra Leone and Liberia
+was severely strained by this outbreak. Patients had to travel long distances
+by various modes of transport to reach a hospital, or worse, a holding center
+before they could be transferred to a hospital,\footnote{%
+\url{http://www.cdc.gov/mmwr/preview/mmwrhtml/mm6439a4.htm}}
+which played a big role in increasing transmission in the initial stages of the outbreak.
+As part of the response efforts,
+Ebola Treatment Centers (ETCs) were set up with international help
+in order to isolate and treat infected individuals.
+However, this was done without necessarily
+optimizing access to healthcare for infected patients, so some of the ETCs
+were underutilized.  For instance, several
+ETCs never saw any patients.\footnote{%
+\url{http://www.nytimes.com/2015/04/12/world/africa/idle-ebola-clinics-in-liberia-are-seen-as-misstep-in-us-relief-effort.html?_r=0}}.
+While there might be a multitude of reasons (which are still being studied by
+the public health community), some of these include: limitations in forecasting
+Ebola spread (including lack of data and behavioral adaptations at all levels), 
+delays in response, and the disconnect between logistical planning and forecasting.
+Some of the key problems that arose in that process are: \emph{How should
+such facilities be deployed? What objectives should be considered in their planning,
+and what information is needed to ensure effective deployment?}
+
+These problems are not restricted to the Ebola outbreak, but arise more generally whenever
+the health infrastructure gets strained, which could happen during a pandemic flu scenario.
+In this paper, we study problems of optimizing the deployment of healthcare resources including:
+which objectives are important, how to deploy facilities in the initial stages of the outbreak
+without complete information, and how to plan incremental deployment, when the number
+of facilities is not known ahead of time. We develop novel methods for incremental facility
+location, which give solutions with provably low cost, relative to the optimum solution
+(as discussed later), and evaluate them using detailed simulated outbreaks of
+Ebola in West Africa.
+
+As we may expect, we find that the optimum solution depends crucially on the specific objective
+(e.g., individual vs social cost), and it is more effective to plan based on forecasted demands,
+instead of just the static population demand. More surprisingly, we show that
+there exists a natural notion of a \emph{kernel}, such that an efficient 
+\emph{near-optimal} solution can be obtained by:
+(1) opening facilities initially at the kernel locations, and
+(2) opening subsequent facilities incrementally using a novel method based on linear programming.
+This is particularly useful if the number of facilities to
+be deployed is not known in advance, or they have to be deployed incrementally.
+Thus, our results suggest a simple and efficient method for deploying healthcare resources.
+
+\textcolor{red}{Bryan: Some discussion of healthcare logistics research}
+
+%\noindent
+%\textbf{Summary of our contributions}
+%\begin{enumerate}
+%\item
+%Individual vs social cost: the optimal solution depends crucially on what
+%kind of objective is being considered.
+%\item
+%Need for spatio-temporal forecasting of epidemic spread: we find that
+%using forecasted incidence rates can lead to
+%close to 10-15\% reduction in the average travel time. Even with x\% errors
+%in the forecasts, we get y\% improvement in the individual objective.
+%\item
+%Incremental facility location: we develop a novel method \textsc{OnlinekMed}, which
+%deploys facilities incrementally, based on the new infections (without altering
+%the ones already deployed). We find it is x\% worse compared to the extreme
+%approach that allows facilities to be redeployed completely, based on the observed
+%infection rates.
+%\item
+%Kernel facilities: if the number of facilities ($k$) is not known in advance,
+%we find that there exist certain locations, such that deployment at these locations
+%remains efficient for any $k$. 
+%\end{enumerate}
+
