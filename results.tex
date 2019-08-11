@@ -82,14 +82,12 @@ Our conclusion in this subsection is that it is only marginally beneficial to ex
 
 
 
-\subsection*{Kernel facilities in incremental selection}
+\subsection*{Kernel facilities}
+We run algorithm \algokernelkmed{} on datasets A and B \red{(averaged across all subinstances, $r = 30$)}.
+Figure \ref{fig:coreset_A_and_B} shows the frequencies of facilities, sorted in decreasing order.
+The figure shows that there are many facilities which occur in most of the solutions, and many facilities which are rarely used in any solution.
+Recall that we define the $\ell$-kernel as the $\ell$ facilities which have the highest frequencies. For example, the $10$-kernel for Dataset A is strong, as all its facilities occur in at least $90$\% of the solutions. Dataset B has weaker kernels, possibly because it is an average over multiple possible demand sets. Comparing the kernels of Datasets A and B, there is no apparent correlation. Our explanation is that the most useful facilities for the population data are spread out across the country.
 
-In the $k$-median formulation, we know ahead of time exactly how many facilities we may place, and we may plan our solution accordingly. In real scenarios, facilities may be placed over time in incremental steps or stages, the final number of which may not be known. In this case given, say, 5 facilities to start with, we don't just want to find the best solution using 5 facilities, but one that would continue to give good solutions if more facilities are added in future.
-
-
-\red{some of this needs to go into the method section}
-To this end we introduce the notion of a ``kernel''. 
-Roughly speaking, a kernel is a set of \textit{important} facilities that appear in many different solutions regardless of the value of $k$ chosen. They also have the stability property that larger kernels are always supersets of all smaller kernels. This is rarely the case when using $k$-median solutions directly.
 
 \begin{figure}[h]
   \centering % left bottom right top
@@ -99,12 +97,6 @@ Roughly speaking, a kernel is a set of \textit{important} facilities that appear
         \label{fig:coreset_A_and_B}
 \end{figure}
 
-We develop $\textsc{KernelKMed}$ for finding a kernel set, using the number of times facilities are chosen, as $k$ increases. This runs in the following manner.
-Let $0 < r \leq n$ be some parameter. We solve the $k$-median problem with $k = 1, 2, \ldots, r$ using population demands. Then for each facility $i \in H$, we record the frequency that $i$ appears in our $r$ solutions.
-
-The results for Dataset A and Dataset B (averaged across all subinstances, $r = 30$) are shown in Figure \ref{fig:coreset_A_and_B}, with facilities sorted in order of decreasing frequency. The figure shows that there are many facilities which occur in most of the solutions, and many facilities which are rarely used in any solution. 
-
-We thus define the $\ell$-kernel as the $\ell$ facilities which have the highest frequencies. For example, the $10$-kernel for Dataset A is strong, as all its facilities occur in at least $90$\% of the solutions. Dataset B has weaker kernels, possibly because it is an average over multiple possible demand sets. Comparing the kernels of Datasets A and B, there is no apparent correlation. Our explanation is that the most useful facilities for the population data are spread out across the country.
 
 
 \begin{figure}[h]
@@ -128,21 +120,6 @@ likely that planning using forecast demands would give improvements over not
 considering such information at all. At the same time, there is uncertainty
 in forecasts using all current methodologies, especially at a high
 spatio-temporal scale \cite{chakraborty:sdm14}.
-
-We study the effect of using forecasted epidemic incidence rates on the
-quality of the solution. We consider three timesteps, $t=0$, $1$, and $2$, and
-instances denoted by A, B and C corresponding to these times, as discussed in Section \ref{sec:expdesign}.
-We denote the population demands at a center $j\in P$ in these three instances
-by $p_j^A$, $p_j^B$ and $p_j^C$, respectively.
-$A$ denotes the instance at time $t=0$---this
-corresponds to the pre-outbreak phase, and 
-we assume that any member of the population is equally likely to become infected.
-Therefore, $p^A_j$ just corresponds to the population demand at center $j$.
-The instance $B$ corresponds to the state at an early stage of the outbreak,
-and $p^B_j$ denotes the incidence rates at center $j$ at this time.
-Instance $C$ represents the state towards the end of the outbreak,
-and $p^C_j$ is the cumulative number of infections at $j$.
-
 In order to evaluate the effect of forecasting,
 we consider solutions for instance $C$ computed in three different
 ways: (1) the optimum solution, denoted by $OPT_C$;
@@ -223,6 +200,59 @@ How should we choose the set of important facilities to pre-open at time $t = 0$
        \includegraphics[width=0.40\textwidth]{new_figs/plotC_hybrid_freq_SL.png}
     \caption{Hybrid solutions for Liberia (left) and Sierra Leone (right).}
 \label{fig:hybrid}
+\end{figure}
+
+
+\subsection*{Incremental facility location}
+\red{this overlaps with the hybrid version above. Maybe merge both?}
+In this section, we summarize our numerical results for the incremental hospital location problem. Recall that $t_1, t_2, \ldots$ are the times after $1$ week, $2$ weeks, etc from the start of the epidemic. We exploit the property of kernel facilities in the following manner: for the first $s-1$ time points (weeks), $t_1, \ldots, t_{s-1}$, we only use the kernel with uniform capacity $cap_1$. Starting from time $t_{s}$, we build $k'$ additional hospitals at time points  $t_s, t_{s+w}, t_{s+2w}, \ldots$ for some $w \in \mathbb{N}$. In other words, we are able to build $k'$ additional facilities after every $w$ weeks starting from time $t_s$. These new hospitals will have uniform capacity $cap_2$.
+
+
+\begin{itemize}
+\item
+Figure \ref{fig:online1} compares the incremental solution with 
+$s=1$, $w=2$, $k=5, k' = 2$, $cap_1 = cap_2 = 100$, with the static fractional solution
+(which serves as a lower bound). We find that the solutions are really close, after about 5 weeks.
+\item
+The performance of the incremental approach depends on the initial capacity, $cap_1$, as shown
+in Figure \ref{fig:online2}. If $cap_1$ is too low, this can cause spikes in the average cost
+at some subsequent time, when the patient demand peaks.
+\item
+Another important determinant for the performance of the incremental algorithm is the
+number $k'$ of facilities opened at each time. Figure \ref{fig:online3} compares two different
+policies, namely (i) one every two weeks, starting at week 10, and
+(ii) two each week, starting week 1. As one would expect the former has a much
+higher cost, especially in the early stages of the epidemic.
+\end{itemize}
+
+\begin{figure}[h]
+  \centering % left bottom right top
+    \includegraphics[width=0.30\textwidth]{figs/plot_kmed_CAP100.png}
+    \includegraphics[width=0.30\textwidth]{figs/plot_kmed_CAP100_SL.png}
+    \includegraphics[width=0.3\textwidth]{figs/plot_online_cap100.png}
+    \caption{Comparing the static and incremental strategies for
+$s=1$, $w=2$, $k=5, k' = 2$, $cap_1 = cap_2 = 100$ for
+(a) Liberia, and (b) Sierra Leone.
+The variance in the solution costs over multiple iterations is shown in (c).}
+\label{fig:online1}
+\end{figure}
+
+\begin{figure}[h]
+  \centering % left bottom right top
+    \includegraphics[width=0.45\textwidth]{figs/plot_kmed_c1.png}
+    \includegraphics[width=0.45\textwidth]{figs/plot_kmed_c1c2_SL.png}
+    \caption{Effect of the initial capacity $cap_1$ on the incremental solution, with
+parameters $s = 10, w = 2, k' = 1, cap_2 = 160$, for (a) Liberia, and (b) Sierra Leone.}
+\label{fig:online2}
+\end{figure}
+
+\begin{figure}[h]
+  \centering % left bottom right top
+    \includegraphics[width=0.45\textwidth]{figs/plot_kmed_CAP160_s1_s10.png}
+    \includegraphics[width=0.45\textwidth]{figs/plot_kmed_CAP160_s1_s10_SL.png}
+    \caption{Two different opening policies, with kernel size = $5$, for
+(a) Liberia and (b) Sierra Leone.}
+\label{fig:online3}
 \end{figure}
 
 

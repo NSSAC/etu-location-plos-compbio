@@ -68,9 +68,10 @@ some population nodes. Minimizing the $k$-supplier objective may greatly increas
 
 \subsection*{Problem statement.} 
 Given the population demand vectors $\mathbf{p}(t) \in \mathbb{Z}_+^{|P|}$ by time, 
-we consider two classes of problems:
-\begin{enumerate}
-\item \emph{Static Hospital Location} (\probstatic) problem: select a subset $H' \subseteq H$ of locations 
+we consider the following problems.
+
+\noindent
+\emph{Static Hospital Location} (\probstatic) problem: select a subset $H' \subseteq H$ of locations 
 for opening hospitals at some time $\tau_0$, and an assignment $g: P \rightarrow H'$ of population demands 
 to the opened facilities, such that
 (1) $|H'|\leq k$, where $k$ is the number of facilities that can be opened,
@@ -91,8 +92,11 @@ Maximizing number of close clients:
 given a bound on the travel cost $D$, the goal is to maximize the number of clients which have a 
 hospital within that distance.
 \end{itemize}
-\item
-\emph{Incremental Hospital Location}: incrementally select a subset $H'_{\tau}$ of locations at multiple times
+
+
+
+\noindent
+\emph{Incremental Hospital Location} (\probinc) problem: incrementally select a subset $H'_{\tau}$ of locations at multiple times
 $\tau\in\{\tau_0,\ldots,\tau_N\}$, and an assignment $g:P\rightarrow H'$
 of population demands to the opened facilities, where $H'=\cup_{\tau} H'_{\tau}$, such that
 \begin{itemize}
@@ -101,10 +105,12 @@ of facilities that can be opened at time $\tau$,
 \item 
 The capacity constraints are satisfied at each time, i.e., 
 for all $i\in H'$, $\sum_{j \in P: g(j)=i} p_j(t) \leq cap(i)$, and
-\item The cost objective $\objcenter(H', g)$ or $\objmedian(H', g)$ is minimized. 
+\item The cost objective $\objmedian(H', g)$ is minimized. 
 \end{itemize}
-\end{enumerate}
 
+Note that we only consider the $\objmedian$ objective in the case of \probinc{}. This is because
+our results suggest that the $\objmedian$ objective has good properties, in practice, compared to the
+$\objcenter$ objective.
 
 
 \subsection*{Data and Models}
@@ -166,8 +172,23 @@ while the road network of Liberia was derived from spatial data from the Liberia
 Using ArcGIS 10.1 SP1, we stitched together the road and river networks to create a single travel network, then placed the weighted demand and supply points on network edge nearest to them. We then created an origin-destination cost matrix representing travel time from all demand points to all candidate supply points.
 \red{citations for some things above}
 
-We construct three different input instances, referred to as datasets A,B,C. 
-\red{Need description of these}
+
+\noindent
+\textbf{Datasets.}
+\red{Complete description of these}
+Using the above models, we construct three different input instances for \red{Liberia},
+referred to as datasets A, B, and C. 
+We denote the population demands at a center $j\in P$ in these three instances
+by $p_j^A$, $p_j^B$ and $p_j^C$, respectively.
+These correspond to three different times during the duration of the outbreak
+$A$ denotes the instance at time $t=0$---this
+corresponds to the pre-outbreak phase, and 
+we assume that any member of the population is equally likely to become infected.
+Therefore, $p^A_j$ just corresponds to the population demand at center $j$.
+The instance $B$ corresponds to the state at an early stage of the outbreak,
+and $p^B_j$ denotes the incidence rates at center $j$ at this time.
+Instance $C$ represents the state towards the end of the outbreak,
+and $p^C_j$ is the cumulative number of infections at $j$.
 
 
 %\begin{table}[ht]
@@ -331,4 +352,80 @@ for this variation as well, we only study the fractional solution. This can be c
 $\LP_{\CAPKMED}$ by maximizing $\sum_{j\in P}\sum_{i\in H} x_{ij}p_j$, and setting $x_{ij} = 0$,
 for all $i\in H, j\in P \mbox{ with }d_{ij}>D$.
 \end{enumerate}
+
+\noindent
+\textbf{Kernel facilities.}
+Both types of objectives assume the number of facilities, $k$, is known in advance.
+In real scenarios, facilities may be placed over time in incremental steps or stages, the final number of which may not be known. In this case given, say, 5 facilities to start with, we don't just want to find the best solution using 5 facilities, but one that would continue to give good solutions if more facilities are added in future.
+To this end we introduce the notion of a ``kernel''. 
+Roughly speaking, a kernel is a set of \textit{important} facilities that appear in many different solutions regardless of the value of $k$ chosen. They also have the stability property that larger kernels are always supersets of all smaller kernels. This is rarely the case when using $k$-median solutions directly.
+
+Our algorithm \algokernelkmed{} for finding a kernel set involves the following steps.
+\begin{enumerate}
+\item
+Let $0 < r \leq n$ be some parameter. 
+\item
+We solve the $k$-median problem with $k = 1, 2, \ldots, r$ using population demands. 
+\item
+For each facility $i \in H$, we record the frequency that $i$ appears in our $r$ solutions.
+\item
+We define the $\ell$-kernel as the $\ell$ facilities which have the highest frequencies. 
+\end{enumerate}
+
+
+
+\subsection*{Algorithm for the \probinc{} problem}
+In this section, we consider the setting where facilities might be deployed incrementally, with a fixed capacity. We consider a given schedule $t_0, t_1, \ldots, t_m$, which denote the discrete times at which we want to monitor the epidemic. At time $t_u$, we let $k_u \geq 0$ denote the number of new facilities with uniform capacity $cap_u \geq 1$ that can be deployed. We also $\mathbf{p}(t_u)$ be the demand vector at time $t_u$. In our experiments, $t_1, t_2, \ldots, t_m$ are equidistant and corresponding to the times after $1$ week, $2$ weeks, and so on. Our method \textsc{OnlineKMed} starts with an initial
+deployment of $k_0$ facilities at time $t_0$, based on the population density, and at each subsequent time $t_u$ with $u > 0$, it uses the current infection rates to determine the locations where $k_u$ additional facilities could be deployed, \emph{without altering the locations of facilities already deployed}. Let $O_u$ denote the set of open hospital at time $t_u$. We require that $O_0 \subseteq O_1 \subseteq O_2 \ldots \subseteq O_m$.
+
+Let us consider any time $t_u$ where $u > 0$. Let $C_{u-1}$ denote the total capacities of all hospital up to time $t_{u-1}$. The first question is ``how should we determine the number $k_u$ of new hospitals to be built?'' In practice, there are two main factors for estimating parameter $k_u$: (1) our current budget and (2) the forecasted demand vectors $\mathbf{p}(t_v)$ for a few next time points $\{t_v: v \geq u\}$. Indeed we want to cover as many population nodes as possible; however, the total opening cost will have to be bounded by some given budget.
+
+Now suppose we know the value of $k_u$. Then the maximum number of patients who can be served is $C_u = C_{u-1} + k_u \times cap_u$. We have two cases:
+\begin{itemize}
+	\item Case $C_u \geq |\mathbf{p}(t_u)|_1$: it is possible to serve all patients at time $t_u$. We solve the corresponding capacitated $k$-median instance with the set $O_{u-1}$ being opened and obtain the solution $O_u$. Now the optimal assignment of patients to open facilities in $O_u$ can be easily found by solving a minimum cost max-flow problem.
+	
+	\item Case $C_u < |\mathbf{p}(t_u)|_1$: it is impossible to serve all patients at time $t_u$. We suggest the following policy. We sort all patients (recall that the node $j \in P$ has $p_j(t_u)$ patients at time $t_u$) in decreasing order of distance to the nearest hospital in $H$. Let $S_u$ be the set of the top $|\mathbf{p}(t_u)|_1 - C_u$ patients in this list. We refer to $S_u$ as the set of ``outliers'' at time $t_u$. We shall need some alternative treatment for the people in $S_u$. Then we exclude $S_u$ from $P$ to obtain a new demand vector $\mathbf{p}'(t_u)$ such that $|\mathbf{p}'(t_u)|_1 = C_u$. The problem can now be solved as in the first case.
+	
+\end{itemize}
+
+
+
+
+
+Consider any time point $t_u$. Recall that $k = k_u$ is the number of additional hospitals to be built, $O = O_{u-1}$ is the set of open hospitals up to this time, $\mathbf{p}$ and $P$ are the demand vector and population set after excluding the outliers respectively, and $c = cap_u$ is the capacity for all hospitals to be opened at time $t_u$. For each $i \in O$, recall that $cap(i)$ is the (fixed) capacity of hospital $i$ which was chosen when building $i$. The LP relaxation for the capacitated $k$-median problem at time $t_u$ is as follows.
+
+\begin{alignat}{2}  
+  \LP_{\CAPKMED}(O, \mathbf{p}, P, c, k): \min  &  \sum_{i \in H}\sum_{j \in P} p_j d_{ij} x_{ij} \nonumber\\
+    \text{s.t.} & \sum_{i \in H} x_{ij} = 1    &\qquad& \forall j \in P  \\
+                             &  x_{ij} \leq y_i      && \forall i \in H, j \in P \ \\
+                             & \sum_{j \in P} x_{ij} \leq cap(i)      && \forall i \in O  \label{cstr:kmed3} \\
+                             & \sum_{j \in P} x_{ij} \leq c      && \forall i \in H \setminus O  \label{cstr:kmed4} \\
+                             & y_i = 1    && \forall i \in O  \\
+                             &  \sum_{i\in H} y_{i} \leq |O|+k_u      &&  \\
+                             & x_{ij},  y_i \in [0,1]&& \forall i \in H, j \in P.\nonumber
+\end{alignat}
+The constraints (\ref{cstr:kmed3}) and (\ref{cstr:kmed4}) make sure that no hospital will serve more patients than its capacity. 
+
+
+We are now ready to describe our main algorithm.
+\begin{algorithm}[h]
+\caption{$\textsc{OnlineKMed} \left(H, P, \mathbf{p}, w, \ell, r_{\text{kernel}}, r_{\text{depRound}} \right)$}
+\begin{algorithmic}[1]
+\STATE Time $t_0$: compute the kernel $O_0 \gets \textsc{KernelKMed}(\ell, r_{\text{kernel}})$
+\FOR{each $t_u$ where $u = 1,2,\ldots, m$}
+	\STATE Choose $k_u$ and $cap(u)$ based on the current budget and the forcasted demand vector $\mathbf{p}(t_u)$
+	\STATE Compute the set of outliers $S_u$ and the updated demand vector $\mathbf{p}'(t_u)$ after excluding the nodes in $S_u$
+	\STATE $\mathbf{y} \gets \LP_{\CAPKMED}(O_{u-1}, \mathbf{p}'(t_u), P \setminus S_u, cap(u), k_u)$
+	\STATE $\mathbf{Y} \gets \textsc{Round}\left( \mathbf{y}, r_{\text{depRound}} \right)$
+	\STATE $O_t \gets \{i \in H: Y_i = 1\}$
+	\STATE Let $V = \{v_s, v_t\} \cup (P \setminus S_u) \cup O_t$. Construct a graph on $V$ as follows.
+	\STATE Create an edge $(v_s, j)$ for each $j \in P \setminus S_u$ with capacity $c_{(v_s, j)} = p_j'(t_u)$ and weight $w_{(v_s, j)} = 0$.
+	\STATE Create an edge $(j, i)$ for each $j \in P \setminus S_u$ and $i \in O_t$ with capacity $c_{(j, i)} = +\infty$ and weight $w_{(j, i)} = d_{i, j}$.
+	\STATE Create an edge $(i, v_t)$ for each $i \in O_t$ with capacity $c_{(i, v_t)} = cap(u)$ and weight $w_{(i, v_t)} = 0$.
+	\STATE Find the minimum cost max-flow $f$ from $v_s$ to $v_t$. For each $j \in P \setminus S_u$ and $i \in O_t$, assign $f_{j,i}$ patients from node $j$ to hospital $i$.
+\ENDFOR
+\end{algorithmic} 
+\end{algorithm}
+
+
 
