@@ -270,9 +270,6 @@
 %
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\opt}{\mathrm{OPT}}
-\newcommand{\eopt}{E_{\mathrm{OPT}}}
-\newcommand{\edeg}{e_{\mathrm{deg}}}
-\newcommand{\prob}{\textsc{Spectral Radius Minimization}}
 \newcommand{\degr}{\mathrm{d}}
 \newcommand{\Vol}{\mathrm{Vol}}
 \newcommand{\wmax}{w_{\max}}
@@ -328,8 +325,9 @@
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\objcenter}{\phi_{max}}
 \newcommand{\objmedian}{\phi_{avg}}
-\newcommand{\probstatic}{SHL}
-\newcommand{\probinc}{IHL}
+\newcommand{\probstatic}{\textsc{FacilityPlanning}}
+\newcommand{\probkernel}{\textsc{KernelFacility}}
+\newcommand{\probinc}{\textsc{IncrementalFacility}}
 \newcommand{\algokmedstatic}{\textsc{StaticKMed}}
 \newcommand{\algokmedonline}{\textsc{OnlineKMed}}
 \newcommand{\algokernelkmed}{\textsc{KernelKMed}}
@@ -359,12 +357,12 @@ e.g., diagnostic centers and hospitals, is crucial for controlling the spread of
 pandemic disease. However, this turns out to be a challenging multi-criteria
 optimization problem. In this paper, we use rigorous methods from location theory
 to study these problems. Specifically, we consider what
-kinds of objectives are important, and how should facilities be deployed in order to
+kinds of objectives are important, and how facilities should be deployed in order to
 optimize those objectives, especially when they are being deployed incrementally.
 Using simulated outbreak data for the 2014 Ebloa outbreak in West Africa,
-we find that the specific objective, i.e., individual vs social cost (e.g., travel time 
+we find that the specific objective, i.e., individual vs. social cost (e.g., travel time 
 to the nearest open facility), has a significant impact,
-and the use of epidemic forecasts can greatly improve the quality of the solutions.
+and that the use of epidemic forecasts can greatly improve the quality of the solutions.
 In the typical setting where the number of facilities to be deployed is not known ahead of time,
 we also demonstrate a new approach for incrementally deploying facilities, which
 leads to solutions with cost very close to the optimal solutions. In particular, we find
